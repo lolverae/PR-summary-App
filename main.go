@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"net/smtp"
 	"os"
 
+	"github.com/google/go-github/github"
 	"github.com/joho/godotenv"
+	"golang.org/x/oauth2"
 )
 
 type Config struct {
@@ -55,8 +59,34 @@ func SendReport(report string) {
 	log.Print("Sent")
 }
 
+func GenerateReport() string {
+	config, err := LoadConfig()
+	if err != nil {
+		log.Fatalf("Error loading configuration: %s", err)
+	}
+
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: config.GithubToken},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+
+	client := github.NewClient(tc)
+
+	githubRepo := "kubernetes"
+	repoOwner := "kubernetes"
+
+	repos, _, err := client.PullRequests.List(ctx, repoOwner, githubRepo,
+		nil)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return github.Stringify(repos)
+}
+
 func main() {
-  report := "Test Report"
-  SendReport(report)
+	report := GenerateReport()
+	SendReport(report)
 
 }
