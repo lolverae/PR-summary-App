@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
@@ -42,24 +43,27 @@ func GenerateReport() string {
 
 	summary := fmt.Sprintf("Pull Request Summary:\nOpened: %d\nClosed: %d\nIn Progress: %d\n", open, closed, inProgress)
 
+	now := time.Now()
+	oneWeekAgo := now.AddDate(0, 0, -7)
+
 	summaryList := "- Opened Pull Requests:\n"
-	for i, pr := range repos {
-		if *pr.State == "open" {
-			summaryList += fmt.Sprintf("  %d. #%d: \"%s\" by %s\n", i+1, *pr.Number, *pr.Title, *pr.User.Login)
+	for _, pr := range repos {
+		if *pr.State == "open" && pr.UpdatedAt.After(oneWeekAgo) {
+			summaryList += fmt.Sprintf("#%d: \"%s\" by %s\n on %s", *pr.Number, *pr.Title, *pr.User.Login, *pr.CreatedAt)
 		}
 	}
 
 	summaryList += "\n- Closed Pull Requests:\n"
-	for i, pr := range repos {
-		if *pr.State == "closed" {
-			summaryList += fmt.Sprintf("  %d. #%d: \"%s\" by %s\n", i+1, *pr.Number, *pr.Title, *pr.User.Login)
+	for _, pr := range repos {
+		if *pr.State == "closed" && pr.UpdatedAt.After(oneWeekAgo) {
+			summaryList += fmt.Sprintf("#%d: \"%s\" by %s\n on %s", *pr.Number, *pr.Title, *pr.User.Login, *pr.ClosedAt)
 		}
 	}
 
 	summaryList += "\n- In-Progress Pull Requests:\n"
-	for i, pr := range repos {
-		if *pr.State == "open" && pr.MergedAt == nil {
-			summaryList += fmt.Sprintf("  %d. #%d: \"%s\" by %s\n", i+1, *pr.Number, *pr.Title, *pr.User.Login)
+	for _, pr := range repos {
+		if *pr.State == "open" && pr.MergedAt == nil && pr.UpdatedAt.After(oneWeekAgo) {
+			summaryList += fmt.Sprintf("#%d: \"%s\" by %s\n on %s", *pr.Number, *pr.Title, *pr.User.Login, *pr.CreatedAt)
 		}
 	}
 
