@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/google/go-github/github"
@@ -23,13 +24,56 @@ func GenerateReport() string {
 	githubRepo := "kubernetes"
 	repoOwner := "kubernetes"
 
-	repos, _, err := client.PullRequests.List(context.TODO(), repoOwner, githubRepo, nil)
+	opts := &github.PullRequestListOptions{
+		State:     "all",
+		Sort:      "created",
+		Direction: "desc",
+	}
+
+	repos, _, err := client.PullRequests.List(context.TODO(), repoOwner, githubRepo, opts)
 	if err != nil {
 		log.Println("Error listing pull requests:", err)
 		return ""
 	}
 
-	return github.Stringify(repos)
+	open := countState(repos, "open")
+	closed := countState(repos, "closed")
+	inProgress := open - closed
+
+	summary := fmt.Sprintf("Pull Request Summary:\nOpened: %d\nClosed: %d\nIn Progress: %d\n", open, closed, inProgress)
+
+	summaryList := "- Opened Pull Requests:\n"
+	for i, pr := range repos {
+		if *pr.State == "open" {
+			summaryList += fmt.Sprintf("  %d. #%d: \"%s\" by %s\n", i+1, *pr.Number, *pr.Title, *pr.User.Login)
+		}
+	}
+
+	summaryList += "\n- Closed Pull Requests:\n"
+	for i, pr := range repos {
+		if *pr.State == "closed" {
+			summaryList += fmt.Sprintf("  %d. #%d: \"%s\" by %s\n", i+1, *pr.Number, *pr.Title, *pr.User.Login)
+		}
+	}
+
+	summaryList += "\n- In-Progress Pull Requests:\n"
+	for i, pr := range repos {
+		if *pr.State == "open" && pr.MergedAt == nil {
+			summaryList += fmt.Sprintf("  %d. #%d: \"%s\" by %s\n", i+1, *pr.Number, *pr.Title, *pr.User.Login)
+		}
+	}
+
+	return summary + summaryList
+}
+
+func countState(repos []*github.PullRequest, state string) int {
+	count := 0
+	for _, pr := range repos {
+		if *pr.State == state {
+			count++
+		}
+	}
+	return count
 }
 
 func createGitHubClient(token string) (*github.Client, error) {
