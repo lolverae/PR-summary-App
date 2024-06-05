@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pr-summary-cronjob
+spec:
+  schedule: "0 0 * * 1"  # Run at midnight on Monday 
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: pr-summary-app
+            image: lolverae/pr-summary-app:latest
+            volumeMounts:
+            - name: env-volume
+              mountPath: /app/.env
+              readOnly: true
+          volumes:
+          - name: env-volume
+            secret:
+              secretName: pr-summary-dotfile
+          restartPolicy: OnFailure
+
