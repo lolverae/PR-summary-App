@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/smtp"
+	"strings"
 	"text/template"
 )
 
@@ -44,6 +45,8 @@ func composeEmail(report EmailData) bytes.Buffer {
 func sendEmail(mail bytes.Buffer, config *Config) error {
 	auth := smtp.PlainAuth("", config.GmailUsername, config.GmailToken, "smtp.gmail.com")
 
-	err := smtp.SendMail("smtp.gmail.com:587", auth, config.GmailUsername, []string{config.GmailUsername}, mail.Bytes())
+	recipients := strings.Split(config.TargetEmails, ",")
+	senderAddr := config.GmailUsername
+	err := smtp.SendMail("smtp.gmail.com:587", auth, senderAddr, recipients, mail.Bytes())
 	return err
 }

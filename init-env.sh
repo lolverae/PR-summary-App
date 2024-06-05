@@ -34,6 +34,8 @@ prompt_and_store_value "TARGET_REPOSITORY"
 echo "Repo Owner: Enter the owner of the GitHub repository"
 prompt_and_store_value "REPOSITORY_OWNER"
 
+echo "Target Emails: Enter the a comma separated list of email addresses that will recieve the PR report"
+prompt_and_store_value "TARGET_EMAILS"
 
 echo "Environment setup complete. Configuration saved to $ENV_FILE."
 
