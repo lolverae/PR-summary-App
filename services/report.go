@@ -12,23 +12,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type PullRequest struct {
-	Number int
-	Title  string
-	Author string
-	Date   string
-	URL    string
-}
-
-type EmailData struct {
-	Repo               string
-	Opened             int
-	Closed             int
-	InProgress         int
-	OpenPullRequests   []PullRequest
-	ClosedPullRequests []PullRequest
-}
-
 var openPullRequests []PullRequest
 var closedPullRequests []PullRequest
 
