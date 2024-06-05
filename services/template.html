@@ -2,14 +2,32 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Pull Request Summary</title>
+    <title>Weekly Pull Request Summary</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        ul {
+            list-style-type: none;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        a {
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h2>Pull Request Summary for {{.Repo}}</h2>
-    <h3>Hello Team, here's the summary of pull requests activity in the last week:</h3>
-    <p>Opened: {{.Opened}}</p>
-    <p>Closed: {{.Closed}}</p>
-    <p>In Progress: {{.InProgress}}</p>
+    <h2>Weekly Pull Request Summary for {{.Repo}}</h2>
+    <h4>Hello Team! 😊</h4>
+    <p>We hope you're having a fantastic week so far! Here's a recap of our recent pull request activity:</p>
+    <p>Number of Pull Requests Opened 💡: {{.Opened}}</p>
+    <p>Number of Pull Requests Closed ✔️: {{.Closed}}</p>
+    <p>Number of Pull Requests In Progress ⚙️: {{.InProgress}}</p>
     <hr>
     <h3>Opened Pull Requests:</h3>
     <ul>
@@ -29,8 +47,9 @@
         {{end}}
     </ul>
     <hr>
-    <p>Please review and take necessary actions.</p>
-    <p>Best regards</p>
+    <p>Thank you for your attention to this summary. Please review and take any necessary actions.</p>
+    <p>Best regards,</p>
+    <p>Your Team</p>
 </body>
 </html>
 
