@@ -29,16 +29,7 @@ func GenerateReport() EmailData {
 	githubRepo := "kubernetes"
 	repoOwner := "kubernetes"
 
-	opts := &github.PullRequestListOptions{
-		State:     "all",
-		Sort:      "created",
-		Direction: "desc",
-	}
-
-	repos, _, err := client.PullRequests.List(context.TODO(), repoOwner, githubRepo, opts)
-	if err != nil {
-		log.Panicf("Error listing pull requests: %s", err)
-	}
+	repos := listPullRequests(client, repoOwner, githubRepo)
 
 	open := countState(repos, "open")
 	closed := countState(repos, "closed")
@@ -121,3 +112,19 @@ func createGitHubClient(token string) (*github.Client, error) {
 	tc := oauth2.NewClient(ctx, ts)
 	return github.NewClient(tc), nil
 }
+
+func listPullRequests(client *github.Client, repoOwner, githubRepo string) []*github.PullRequest {
+	opts := &github.PullRequestListOptions{
+		State:     "all",
+		Sort:      "created",
+		Direction: "desc",
+	}
+
+	repos, _, err := client.PullRequests.List(context.TODO(), repoOwner, githubRepo, opts)
+	if err != nil {
+		log.Panicf("Error listing pull requests: %s", err)
+	}
+
+	return repos
+}
+
