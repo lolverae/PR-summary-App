@@ -12,7 +12,28 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func GenerateReport() (string) {
+
+type PullRequest struct {
+    Number int
+    Title  string
+    Author string
+    Date   string
+}
+
+type EmailData struct {
+    Repo             string
+    Opened           int
+    Closed           int
+    InProgress       int
+    OpenPullRequests []PullRequest
+    ClosedPullRequests []PullRequest
+}
+
+var openPullRequests []PullRequest
+var closedPullRequests []PullRequest
+
+
+func GenerateReport() (EmailData) {
 	config, err := LoadConfig()
 	if err != nil {
 		log.Fatalf("Error loading configuration: %s", err)
@@ -40,11 +61,7 @@ func GenerateReport() (string) {
 	open := countState(repos, "open")
 	closed := countState(repos, "closed")
 	inProgress := open - closed
-
-  summary := fmt.Sprintf(" Hello team,\n Here's the summary of pull requests activity in the last week for the %s repository: \n\nPull Request Summary:\nOpened: %d\nClosed: %d\nIn Progress: %d\n\n", githubRepo, open, closed, inProgress)
-
-	now := time.Now()
-	oneWeekAgo := now.AddDate(0, 0, -7)
+	oneWeekAgo := time.Now().AddDate(0, 0, -7)
 
 	var summaryListBuilder strings.Builder
 
@@ -67,22 +84,36 @@ func GenerateReport() (string) {
 		}
 	}
 
-	summaryListBuilder.WriteString("\n- Opened Pull Requests:\n")
-	for _, pr := range repos {
-		if *pr.State == "open" {
-			appendPR(pr, "open")
-		}
-	}
+    for _, pr := range repos {
+        if *pr.State == "open" {
+            appendPR(pr, "open")
+            openPullRequests = append(openPullRequests, PullRequest{
+                Number: *pr.Number,
+                Title:  *pr.Title,
+                Author: *pr.User.Login,
+                Date:   pr.CreatedAt.Format("January 2, 2006"),
+            })
+        } else if *pr.State == "closed" {
+            appendPR(pr, "closed")
+            closedPullRequests = append(closedPullRequests, PullRequest{
+                Number: *pr.Number,
+                Title:  *pr.Title,
+                Author: *pr.User.Login,
+                Date:   pr.ClosedAt.Format("January 2, 2006"),
+            })
+        }
+    }
 
-	summaryListBuilder.WriteString("\n- Closed Pull Requests:\n")
-	for _, pr := range repos {
-		if *pr.State == "closed" {
-			appendPR(pr, "closed")
-		}
-	}
+    emailData := EmailData{
+        Repo:               githubRepo,
+        Opened:             open,
+        Closed:             closed,
+        InProgress:         inProgress,
+        OpenPullRequests:   openPullRequests,
+        ClosedPullRequests: closedPullRequests,
+    }
 
-	emailEnd := "\nPlease review and take necessary actions.\nBest regards,\nYour Name"
-	return summary + summaryListBuilder.String() + emailEnd
+	return emailData
 }
 
 func countState(repos []*github.PullRequest, state string) int {
