@@ -5,7 +5,7 @@
     <title>Pull Request Summary</title>
 </head>
 <body>
-    <h2>{{.Repo}} Pull Request Summary</h2>
+    <h2>Pull Request Summary for {{.Repo}}</h2>
     <p>Opened: {{.Opened}}</p>
     <p>Closed: {{.Closed}}</p>
     <p>In Progress: {{.InProgress}}</p>
@@ -14,7 +14,7 @@
     <ul>
         {{range .OpenPullRequests}}
             <li>
-                <strong>#{{.Number}}:</strong> "{{.Title}}" by {{.Author}} ({{.Date}})
+                <strong>#{{.Number}}:</strong> "<a href="{{.URL}}">{{.Title}}</a>" by {{.Author}} (Opened on {{.Date}})
             </li>
         {{end}}
     </ul>
@@ -23,13 +23,13 @@
     <ul>
         {{range .ClosedPullRequests}}
             <li>
-                <strong>#{{.Number}}:</strong> "{{.Title}}" by {{.Author}} ({{.Date}})
+                <strong>#{{.Number}}:</strong> "<a href="{{.URL}}">{{.Title}}</a>" by {{.Author}} (Closed on {{.Date}})
             </li>
         {{end}}
     </ul>
     <hr>
     <p>Please review and take necessary actions.</p>
-    <p>Best regards,<br>Your Name</p>
+    <p>Best regards</p>
 </body>
 </html>
 

@@ -26,24 +26,24 @@ func SendReport(report EmailData) {
 }
 
 func composeEmail(report EmailData) bytes.Buffer {
-  t, err := template.ParseFiles("services/template.html")
-  if err != nil {
-      log.Fatalf("Error parsing template: %s", err)
-  }
+	t, err := template.ParseFiles("services/template.html")
+	if err != nil {
+		log.Fatalf("Error parsing template: %s", err)
+	}
 
-  var body bytes.Buffer
-  mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
-  body.Write([]byte(fmt.Sprintf("Subject: Weekly Pull Request Summary\n%s\n\n", mimeHeaders)))
+	var body bytes.Buffer
+	mimeHeaders := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+	body.Write([]byte(fmt.Sprintf("Subject: Weekly Pull Request Summary\n%s\n\n", mimeHeaders)))
 
-  if err := t.Execute(&body, report); err != nil {
-      log.Fatalf("Error executing template: %s", err)
-  }
-  return body
+	if err := t.Execute(&body, report); err != nil {
+		log.Fatalf("Error executing template: %s", err)
+	}
+	return body
 }
 
 func sendEmail(mail bytes.Buffer, config *Config) error {
 	auth := smtp.PlainAuth("", config.GmailUsername, config.GmailToken, "smtp.gmail.com")
-	
-  err := smtp.SendMail("smtp.gmail.com:587", auth, config.GmailUsername, []string{config.GmailUsername}, mail.Bytes())
+
+	err := smtp.SendMail("smtp.gmail.com:587", auth, config.GmailUsername, []string{config.GmailUsername}, mail.Bytes())
 	return err
 }
