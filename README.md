@@ -30,3 +30,5 @@ Best regards,
 Your Name
 ```
 
+![Build badge](https://github.com/lolverae/pr-summary-app/actions/workflows/ci.yaml/badge.svg?event=push)
+
