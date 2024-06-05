@@ -49,21 +49,14 @@ func GenerateReport() string {
 	summaryList := "- Opened Pull Requests:\n"
 	for _, pr := range repos {
 		if *pr.State == "open" && pr.UpdatedAt.After(oneWeekAgo) {
-			summaryList += fmt.Sprintf("#%d: \"%s\" by %s\n on %s", *pr.Number, *pr.Title, *pr.User.Login, *pr.CreatedAt)
+			summaryList += fmt.Sprintf("#%d: \"%s\" by %s opened on %s\n", *pr.Number, *pr.Title, *pr.User.Login, pr.CreatedAt.Format("January 2, 2006"))
 		}
 	}
 
 	summaryList += "\n- Closed Pull Requests:\n"
 	for _, pr := range repos {
 		if *pr.State == "closed" && pr.UpdatedAt.After(oneWeekAgo) {
-			summaryList += fmt.Sprintf("#%d: \"%s\" by %s\n on %s", *pr.Number, *pr.Title, *pr.User.Login, *pr.ClosedAt)
-		}
-	}
-
-	summaryList += "\n- In-Progress Pull Requests:\n"
-	for _, pr := range repos {
-		if *pr.State == "open" && pr.MergedAt == nil && pr.UpdatedAt.After(oneWeekAgo) {
-			summaryList += fmt.Sprintf("#%d: \"%s\" by %s\n on %s", *pr.Number, *pr.Title, *pr.User.Login, *pr.CreatedAt)
+			summaryList += fmt.Sprintf("#%d: \"%s\" by %s closed on %s\n", *pr.Number, *pr.Title, *pr.User.Login, pr.ClosedAt.Format("January 2, 2006"))
 		}
 	}
 
