@@ -16,4 +16,3 @@ type EmailData struct {
 	OpenPullRequests   []PullRequest
 	ClosedPullRequests []PullRequest
 }
-

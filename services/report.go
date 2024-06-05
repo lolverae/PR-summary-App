@@ -25,12 +25,10 @@ func GenerateReport() EmailData {
 	repoOwner := "kubernetes"
 
 	repos := listPullRequests(client, repoOwner, githubRepo)
-
-	open := countState(repos, "open")
-	closed := countState(repos, "closed")
+	open, closed := countPullRequestStates(repos)
 	inProgress := open - closed
 
- 	openPullRequests, closedPullRequests := extractPullRequests(repos)
+	openPullRequests, closedPullRequests := extractPullRequests(repos)
 
 	emailData := EmailData{
 		Repo:               githubRepo,
@@ -44,14 +42,16 @@ func GenerateReport() EmailData {
 	return emailData
 }
 
-func countState(repos []*github.PullRequest, state string) int {
-	count := 0
+func countPullRequestStates(repos []*github.PullRequest) (int, int) {
+	open, closed := 0, 0
 	for _, pr := range repos {
-		if *pr.State == state {
-			count++
+		if *pr.State == "open" {
+			open++
+		} else if *pr.State == "closed" {
+			closed++
 		}
 	}
-	return count
+	return open, closed
 }
 
 func createGitHubClient(token string) (*github.Client, error) {
@@ -104,4 +104,3 @@ func extractPullRequests(repos []*github.PullRequest) ([]PullRequest, []PullRequ
 	}
 	return openPullRequests, closedPullRequests
 }
-
