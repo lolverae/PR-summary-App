@@ -3,17 +3,12 @@ package services
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 )
-
-var openPullRequests []PullRequest
-var closedPullRequests []PullRequest
 
 func GenerateReport() EmailData {
 	config, err := LoadConfig()
@@ -34,50 +29,8 @@ func GenerateReport() EmailData {
 	open := countState(repos, "open")
 	closed := countState(repos, "closed")
 	inProgress := open - closed
-	oneWeekAgo := time.Now().AddDate(0, 0, -7)
 
-	var summaryListBuilder strings.Builder
-
-	appendPR := func(pr *github.PullRequest, state string) {
-		var stateLabel string
-		switch state {
-		case "open":
-			stateLabel = "Opened"
-		case "closed":
-			stateLabel = "Closed"
-		}
-
-		updatedAt := pr.CreatedAt
-		if state == "closed" {
-			updatedAt = pr.ClosedAt
-		}
-
-		if updatedAt.After(oneWeekAgo) {
-			fmt.Fprintf(&summaryListBuilder, "#%d: \"%s\" by %s %s on %s\n", *pr.Number, *pr.Title, *pr.User.Login, stateLabel, updatedAt.Format("January 2, 2006"))
-		}
-	}
-
-	for _, pr := range repos {
-		if *pr.State == "open" {
-			appendPR(pr, "open")
-			openPullRequests = append(openPullRequests, PullRequest{
-				Number: *pr.Number,
-				Title:  *pr.Title,
-				Author: *pr.User.Login,
-				Date:   pr.CreatedAt.Format("January 2, 2006"),
-				URL:    *pr.HTMLURL,
-			})
-		} else if *pr.State == "closed" {
-			appendPR(pr, "closed")
-			closedPullRequests = append(closedPullRequests, PullRequest{
-				Number: *pr.Number,
-				Title:  *pr.Title,
-				Author: *pr.User.Login,
-				Date:   pr.ClosedAt.Format("January 2, 2006"),
-				URL:    *pr.HTMLURL,
-			})
-		}
-	}
+ 	openPullRequests, closedPullRequests := extractPullRequests(repos)
 
 	emailData := EmailData{
 		Repo:               githubRepo,
@@ -126,5 +79,29 @@ func listPullRequests(client *github.Client, repoOwner, githubRepo string) []*gi
 	}
 
 	return repos
+}
+
+func extractPullRequests(repos []*github.PullRequest) ([]PullRequest, []PullRequest) {
+	var openPullRequests, closedPullRequests []PullRequest
+	oneWeekAgo := time.Now().AddDate(0, 0, -7)
+
+	for _, pr := range repos {
+		pullRequest := PullRequest{
+			Number: *pr.Number,
+			Title:  *pr.Title,
+			Author: *pr.User.Login,
+			Date:   pr.GetCreatedAt().Format("January 2, 2006"),
+			URL:    *pr.HTMLURL,
+		}
+
+		if pr.GetUpdatedAt().After(oneWeekAgo) {
+			if *pr.State == "open" {
+				openPullRequests = append(openPullRequests, pullRequest)
+			} else if *pr.State == "closed" {
+				closedPullRequests = append(closedPullRequests, pullRequest)
+			}
+		}
+	}
+	return openPullRequests, closedPullRequests
 }
 
