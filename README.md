@@ -28,6 +28,40 @@ Replace `/path/to/.env` with the absolute path to your `.env` file.
 
 The Docker container will now be running your Go application. Make sure to provide the required environment variables in the `.env` file to ensure proper functionality.
 
+### Running as a Kubernetes CronJob
+
+To run this application using Kubernetes as a CronJob, follow these steps:
+
+#### Create Kubernetes Secret
+
+First, create a Kubernetes Secret containing your `.env` file. Ensure your `.env` file is located in the same directory where you run the following command:
+
+```bash
+kubectl create secret generic pr-summary-dotfile --from-env-file=.env
+```
+
+#### Apply Kubernetes Manifest
+
+Apply the Kubernetes manifest for the CronJob by running the following command:
+
+```bash
+kubectl apply -f ./kubernetes/prsummary_cron.yaml
+```
+
+#### Verify CronJob
+
+To verify that the CronJob has been created successfully, you can run:
+
+```bash
+kubectl get cronjobs
+```
+You can monitor the execution of the CronJob's jobs by checking the corresponding Job resources. To see the list of Jobs created by the CronJob, run:
+
+```bash
+kubectl get jobs
+```
+
+The Kubernetes CronJob will now run your Go application container according to the specified schedule, using the secrets stored in the Kubernetes Secret.
 
 ### Example Report
 Here's an example of the email summary report format that the application generates:
