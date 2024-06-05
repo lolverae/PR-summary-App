@@ -12,28 +12,27 @@ import (
 	"golang.org/x/oauth2"
 )
 
-
 type PullRequest struct {
-    Number int
-    Title  string
-    Author string
-    Date   string
+	Number int
+	Title  string
+	Author string
+	Date   string
+	URL    string
 }
 
 type EmailData struct {
-    Repo             string
-    Opened           int
-    Closed           int
-    InProgress       int
-    OpenPullRequests []PullRequest
-    ClosedPullRequests []PullRequest
+	Repo               string
+	Opened             int
+	Closed             int
+	InProgress         int
+	OpenPullRequests   []PullRequest
+	ClosedPullRequests []PullRequest
 }
 
 var openPullRequests []PullRequest
 var closedPullRequests []PullRequest
 
-
-func GenerateReport() (EmailData) {
+func GenerateReport() EmailData {
 	config, err := LoadConfig()
 	if err != nil {
 		log.Fatalf("Error loading configuration: %s", err)
@@ -84,34 +83,36 @@ func GenerateReport() (EmailData) {
 		}
 	}
 
-    for _, pr := range repos {
-        if *pr.State == "open" {
-            appendPR(pr, "open")
-            openPullRequests = append(openPullRequests, PullRequest{
-                Number: *pr.Number,
-                Title:  *pr.Title,
-                Author: *pr.User.Login,
-                Date:   pr.CreatedAt.Format("January 2, 2006"),
-            })
-        } else if *pr.State == "closed" {
-            appendPR(pr, "closed")
-            closedPullRequests = append(closedPullRequests, PullRequest{
-                Number: *pr.Number,
-                Title:  *pr.Title,
-                Author: *pr.User.Login,
-                Date:   pr.ClosedAt.Format("January 2, 2006"),
-            })
-        }
-    }
+	for _, pr := range repos {
+		if *pr.State == "open" {
+			appendPR(pr, "open")
+			openPullRequests = append(openPullRequests, PullRequest{
+				Number: *pr.Number,
+				Title:  *pr.Title,
+				Author: *pr.User.Login,
+				Date:   pr.CreatedAt.Format("January 2, 2006"),
+				URL:    *pr.HTMLURL,
+			})
+		} else if *pr.State == "closed" {
+			appendPR(pr, "closed")
+			closedPullRequests = append(closedPullRequests, PullRequest{
+				Number: *pr.Number,
+				Title:  *pr.Title,
+				Author: *pr.User.Login,
+				Date:   pr.ClosedAt.Format("January 2, 2006"),
+				URL:    *pr.HTMLURL,
+			})
+		}
+	}
 
-    emailData := EmailData{
-        Repo:               githubRepo,
-        Opened:             open,
-        Closed:             closed,
-        InProgress:         inProgress,
-        OpenPullRequests:   openPullRequests,
-        ClosedPullRequests: closedPullRequests,
-    }
+	emailData := EmailData{
+		Repo:               githubRepo,
+		Opened:             open,
+		Closed:             closed,
+		InProgress:         inProgress,
+		OpenPullRequests:   openPullRequests,
+		ClosedPullRequests: closedPullRequests,
+	}
 
 	return emailData
 }
