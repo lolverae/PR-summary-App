@@ -5,13 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 )
 
-func GenerateReport() string {
+func GenerateReport() (string) {
 	config, err := LoadConfig()
 	if err != nil {
 		log.Fatalf("Error loading configuration: %s", err)
@@ -19,7 +20,7 @@ func GenerateReport() string {
 
 	client, err := createGitHubClient(config.GithubToken)
 	if err != nil {
-		log.Fatalf("Error creating GitHub client: %s", err)
+		log.Panicf("Error creating GitHub client: %s", err)
 	}
 
 	githubRepo := "kubernetes"
@@ -33,34 +34,55 @@ func GenerateReport() string {
 
 	repos, _, err := client.PullRequests.List(context.TODO(), repoOwner, githubRepo, opts)
 	if err != nil {
-		log.Println("Error listing pull requests:", err)
-		return ""
+		log.Panicf("Error listing pull requests: %s", err)
 	}
 
 	open := countState(repos, "open")
 	closed := countState(repos, "closed")
 	inProgress := open - closed
 
-	summary := fmt.Sprintf("Pull Request Summary:\nOpened: %d\nClosed: %d\nIn Progress: %d\n", open, closed, inProgress)
+  summary := fmt.Sprintf(" Hello team,\n Here's the summary of pull requests activity in the last week for the %s repository: \n\nPull Request Summary:\nOpened: %d\nClosed: %d\nIn Progress: %d\n\n", githubRepo, open, closed, inProgress)
 
 	now := time.Now()
 	oneWeekAgo := now.AddDate(0, 0, -7)
 
-	summaryList := "- Opened Pull Requests:\n"
-	for _, pr := range repos {
-		if *pr.State == "open" && pr.UpdatedAt.After(oneWeekAgo) {
-			summaryList += fmt.Sprintf("#%d: \"%s\" by %s opened on %s\n", *pr.Number, *pr.Title, *pr.User.Login, pr.CreatedAt.Format("January 2, 2006"))
+	var summaryListBuilder strings.Builder
+
+	appendPR := func(pr *github.PullRequest, state string) {
+		var stateLabel string
+		switch state {
+		case "open":
+			stateLabel = "Opened"
+		case "closed":
+			stateLabel = "Closed"
+		}
+
+		updatedAt := pr.CreatedAt
+		if state == "closed" {
+			updatedAt = pr.ClosedAt
+		}
+
+		if updatedAt.After(oneWeekAgo) {
+			fmt.Fprintf(&summaryListBuilder, "#%d: \"%s\" by %s %s on %s\n", *pr.Number, *pr.Title, *pr.User.Login, stateLabel, updatedAt.Format("January 2, 2006"))
 		}
 	}
 
-	summaryList += "\n- Closed Pull Requests:\n"
+	summaryListBuilder.WriteString("\n- Opened Pull Requests:\n")
 	for _, pr := range repos {
-		if *pr.State == "closed" && pr.UpdatedAt.After(oneWeekAgo) {
-			summaryList += fmt.Sprintf("#%d: \"%s\" by %s closed on %s\n", *pr.Number, *pr.Title, *pr.User.Login, pr.ClosedAt.Format("January 2, 2006"))
+		if *pr.State == "open" {
+			appendPR(pr, "open")
 		}
 	}
 
-	return summary + summaryList
+	summaryListBuilder.WriteString("\n- Closed Pull Requests:\n")
+	for _, pr := range repos {
+		if *pr.State == "closed" {
+			appendPR(pr, "closed")
+		}
+	}
+
+	emailEnd := "\nPlease review and take necessary actions.\nBest regards,\nYour Name"
+	return summary + summaryListBuilder.String() + emailEnd
 }
 
 func countState(repos []*github.PullRequest, state string) int {
