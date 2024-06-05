@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Pull Request Summary</title>
+</head>
+<body>
+    <h2>{{.Repo}} Pull Request Summary</h2>
+    <p>Opened: {{.Opened}}</p>
+    <p>Closed: {{.Closed}}</p>
+    <p>In Progress: {{.InProgress}}</p>
+    <hr>
+    <h3>Opened Pull Requests:</h3>
+    <ul>
+        {{range .OpenPullRequests}}
+            <li>
+                <strong>#{{.Number}}:</strong> "{{.Title}}" by {{.Author}} ({{.Date}})
+            </li>
+        {{end}}
+    </ul>
+    <hr>
+    <h3>Closed Pull Requests:</h3>
+    <ul>
+        {{range .ClosedPullRequests}}
+            <li>
+                <strong>#{{.Number}}:</strong> "{{.Title}}" by {{.Author}} ({{.Date}})
+            </li>
+        {{end}}
+    </ul>
+    <hr>
+    <p>Please review and take necessary actions.</p>
+    <p>Best regards,<br>Your Name</p>
+</body>
+</html>
+
