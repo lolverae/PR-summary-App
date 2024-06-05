@@ -11,6 +11,9 @@ type Config struct {
 	GithubToken   string
 	GmailUsername string
 	GmailToken    string
+	TargetRepo    string
+	RepoOwner     string
+	TargetEmails  string
 }
 
 func LoadConfig() (*Config, error) {
@@ -23,6 +26,9 @@ func LoadConfig() (*Config, error) {
 		GithubToken:   os.Getenv("GITHUB_TOKEN"),
 		GmailToken:    os.Getenv("GMAIL_TOKEN"),
 		GmailUsername: os.Getenv("GMAIL_USERNAME"),
+		TargetRepo:    os.Getenv("TARGET_REPOSITORY"),
+		RepoOwner:     os.Getenv("REPOSITORY_OWNER"),
+		TargetEmails:  os.Getenv("TARGET_EMAILS"),
 	}
 
 	return config, nil

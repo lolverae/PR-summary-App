@@ -21,8 +21,8 @@ func GenerateReport() EmailData {
 		log.Panicf("Error creating GitHub client: %s", err)
 	}
 
-	githubRepo := "kubernetes"
-	repoOwner := "kubernetes"
+	githubRepo := config.TargetRepo
+	repoOwner := config.RepoOwner
 
 	repos := listPullRequests(client, repoOwner, githubRepo)
 	open, closed := countPullRequestStates(repos)
