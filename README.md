@@ -65,6 +65,9 @@ The Kubernetes CronJob will now run your Go application container according to t
 
 ### Example Report
 Here's an example of the email summary report format that the application generates:
-![Example report](./example-email.png)
+![Example email report](./docs/example-email.png)
+
+Here's an example of the summary report printed to the console that the application generates:
+![Example console report](./docs/example-console-output.png)
 ![Build badge](https://github.com/lolverae/pr-summary-app/actions/workflows/ci.yaml/badge.svg?event=push)
 

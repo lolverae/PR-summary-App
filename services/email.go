@@ -7,6 +7,7 @@ import (
 	"net/smtp"
 	"strings"
 	"text/template"
+	"github.com/k3a/html2text"
 )
 
 func SendReport(report EmailData) {
@@ -23,11 +24,12 @@ func SendReport(report EmailData) {
 		return
 	}
 
+	log.Print(html2text.HTML2Text(mail.String()))
 	log.Print("Email sent successfully")
 }
 
 func composeEmail(report EmailData) bytes.Buffer {
-	t, err := template.ParseFiles("services/template.html")
+	t, err := template.ParseFiles("templates/template.html")
 	if err != nil {
 		log.Fatalf("Error parsing template: %s", err)
 	}
@@ -47,6 +49,7 @@ func sendEmail(mail bytes.Buffer, config *Config) error {
 
 	recipients := strings.Split(config.TargetEmails, ",")
 	senderAddr := config.GmailUsername
+
 	err := smtp.SendMail("smtp.gmail.com:587", auth, senderAddr, recipients, mail.Bytes())
 	return err
 }
